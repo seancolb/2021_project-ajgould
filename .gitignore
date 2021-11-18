@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-*cache
 *site_libs*
 *cache*
 *data*
