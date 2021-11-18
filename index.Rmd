@@ -91,6 +91,8 @@ lulu <- read_sf("data/S_USA.AdministrativeForest/S_USA.AdministrativeForest.shp"
 if(!file.exists("data/DEM1.tif"))
   download.file("https://figshare.com/ndownloader/files/31430317", "data/DEM1.tif")
 
+
+
 DEM<- raster("data/DEM1.tif") %>%
 crop(bighorn) %>%
   mask(bighorn)
