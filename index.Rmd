@@ -57,7 +57,7 @@ library(spatialEco)
 library(knitr)
 library(insol)
 library(tmap)
-#knitr::opts_chunk$set(cache=TRUE)  
+knitr::opts_chunk$set(cache=TRUE, warning=FALSE)  
 
 ```
 
@@ -80,28 +80,20 @@ bighorn <- dplyr::filter(nf,FORESTNAME=="Bighorn National Forest")
 
 # Load DEM Data
 ```{r DEM_Data}
-if(!file.exists("proj_data/DEM1.tif"))
-  download.file("https://figshare.com/ndownloader/files/31430317", "data/DEM1.tif")
 
-
-
-DEM <- raster("proj_data/DEM1.tif") %>%
-crop(bighorn) %>%
-  mask(bighorn)
-
-#DEM2 <- raster("data/DEM2.tif")
-#DEM_combined <- merge(DEM1, DEM2)
-#read it in and then merge them into a single one called "DEM" 
+DEM <- raster("model_data/dem.tif")
 
 ```
 
 # Load in Wyoming Landuse Landcover Data
 ```{r Landuse_Landcover}
-lulu <- raster("proj_data/gaplf2011lc_v30_WY/gaplf2011lc_v30_wy.tif") 
+#lulu <- raster("proj_data/gaplf2011lc_v30_WY/gaplf2011lc_v30_wy.tif") 
 
-lulc <- projectRaster(lulu,DEM, method='ngb') %>%
-  crop(bighorn)
+#lulc <- projectRaster(lulu,DEM, method='ngb') %>%
+#  crop(bighorn)
  
+
+lulc=raster("model_data/lulc.tif")
 ```
 
 
@@ -174,18 +166,10 @@ ggplot(data=Merged, mapping=aes(x=plots$lon, y=plots$lat, color =Merged$div))+
 
 ## Calculate TPI, Slope angle, Slope aspect and Elevation
 ```{r Topo}
-#Calculating TPI, elevation, angle and aspect 
-#extract(DEM,)
-tpiw <- function(x, w=5) {
-	m <- matrix(1/(w^2-1), nc=w, nr=w)
-	m[ceiling(0.5 * length(m))] <- 0
-	f <- focal(x, m)
-	x - f}
-tpi100 <- tpiw(DEM, w=11)
 
-TPI <- terrain(DEM, opt="TPI",) 
-slope <- terrain(DEM,opt="slope", units ="degrees")
-aspect <- terrain(DEM,opt="aspect")
+TPI <- raster("model_data/TPI.tif")
+slope <- raster("model_data/slope.tif")
+aspect <- raster("model_data/aspect.tif")
 
 topo <- stack(DEM, slope, aspect, TPI)
 
@@ -197,6 +181,7 @@ plot(TPI)
 #look at how others have calculates trees in FIA plots 
 
 ```
+
 ## Extract Points
 ```{r Extract_Points}
 #Extracting
@@ -209,7 +194,7 @@ plot(bind)
 ```{r Diversity_vs_TPI}
 whole<- merge(trees, bind)
 
-ggplot(data=whole, mapping=aes(x=tpi, y=div, color=Species_Scientific_Name)) +
+ggplot(data=whole, mapping=aes(x=TPI, y=div, color=Species_Scientific_Name)) +
   geom_point()+
   geom_smooth()+
   facet_wrap(~trees$Species_Scientific_Name)
@@ -238,7 +223,7 @@ ggplot(data=whole, mapping=aes(x=aspect, y=div, color=trees$Species_Scientific_N
 ```{r Diversity_vs_Elevation}
 whole<- merge(trees, bind)
 
-ggplot(data=whole, mapping=aes(x=DEM1, y=div, color=trees$Species_Scientific_Name)) +
+ggplot(data=whole, mapping=aes(x=dem, y=div, color=trees$Species_Scientific_Name)) +
   geom_point()+
   geom_smooth()
 
@@ -247,7 +232,7 @@ ggplot(data=whole, mapping=aes(x=DEM1, y=div, color=trees$Species_Scientific_Nam
 ```{r Canopy_Density_vs_Elevation}
 whole<- merge(trees, bind)
 
-ggplot(data=whole, mapping=aes(x=DEM1, y=Canopy_Density_mean, color=trees$Species_Scientific_Name)) +
+ggplot(data=whole, mapping=aes(x=dem, y=Canopy_Density_mean, color=trees$Species_Scientific_Name)) +
   geom_point()+
   geom_smooth()
 
@@ -256,7 +241,7 @@ ggplot(data=whole, mapping=aes(x=DEM1, y=Canopy_Density_mean, color=trees$Specie
 ```{r Leaf_Angle_vs_Elevation}
 whole<- merge(trees, bind)
 
-ggplot(data=whole, mapping=aes(x=DEM1, y=Leaf_Angle_mean, color=trees$Species_Scientific_Name, size=trees$DBH)) +
+ggplot(data=whole, mapping=aes(x=dem, y=Leaf_Angle_mean, color=trees$Species_Scientific_Name, size=trees$DBH)) +
   scale_size(range=c(1,3))+
   geom_point()+
   geom_smooth()
@@ -266,7 +251,7 @@ ggplot(data=whole, mapping=aes(x=DEM1, y=Leaf_Angle_mean, color=trees$Species_Sc
 ```{r Leaf_Angle_vs_TPI}
 whole<- merge(trees, bind)
 
-ggplot(data=whole, mapping=aes(x=tpi, y=Leaf_Angle_mean, color=trees$Species_Scientific_Name)) +
+ggplot(data=whole, mapping=aes(x=TPI, y=Leaf_Angle_mean, color=trees$Species_Scientific_Name)) +
   geom_point()+
   geom_smooth(method='lm')
 
@@ -284,6 +269,13 @@ ggplot(data=tree_coords, mapping=aes(x=lon, y=lat, color=Species_Scientific_Name
 tmap::tmap_mode(mode='view')
 tm_shape(bind)+
   tm_dots(col='black')
+
+```
+```{r}
+
+lm1 <- lm(div~TPI, data=bind)
+
+summary(lm1)
 
 ```
 
