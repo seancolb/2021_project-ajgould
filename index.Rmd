@@ -151,7 +151,7 @@ ggplot(data= diversity, mapping=aes(x=Plot_Number, y=div))+
 
 ## Create a Merged Dataset
 ```{r Merged}
-#Merge Datasets (originally had diversity in the bottom, changed to get speceis name)
+#Merge Datasets (originally had diversity in the bottom, changed to get speceis name) 
 Merged <- merge(canopy, plots) %>%
   merge(diversity) %>%
   st_as_sf(coords = c(x="lon", y="lat")) %>%
@@ -167,7 +167,7 @@ ggplot(data=Merged, mapping=aes(x=plots$lon, y=plots$lat, color =Merged$div))+
 ## Calculate TPI, Slope angle, Slope aspect and Elevation
 ```{r Topo}
 
-TPI <- raster("model_data/TPI.tif")
+TPI <- raster("model_data/TPI.tif") 
 slope <- raster("model_data/slope.tif")
 aspect <- raster("model_data/aspect.tif")
 
@@ -196,10 +196,10 @@ whole<- merge(trees, bind)
 
 ggplot(data=whole, mapping=aes(x=TPI, y=div, color=Species_Scientific_Name)) +
   geom_point()+
-  geom_smooth()+
-  facet_wrap(~trees$Species_Scientific_Name)
+  geom_smooth(method=lm, span=0.5)+
+  facet_wrap(~trees$Species_Scientific_Name) 
 ```
-## Diversity vs Slope Anlge 
+## Diversity vs Slope Anlge  
 ```{r Diversity_vs_Slope_Angle}
 whole<- merge(trees, bind)
 
@@ -215,7 +215,9 @@ whole<- merge(trees, bind)
 
 ggplot(data=whole, mapping=aes(x=aspect, y=div, color=trees$Species_Scientific_Name)) +
   geom_point()+
-  geom_smooth()
+  geom_smooth()+
+  ggtitle("Aspect's Effect on Diversity")+
+  theme(plot.title = element_text(hjust = 0.5)) 
 
 ```
 
@@ -234,7 +236,7 @@ whole<- merge(trees, bind)
 
 ggplot(data=whole, mapping=aes(x=dem, y=Canopy_Density_mean, color=trees$Species_Scientific_Name)) +
   geom_point()+
-  geom_smooth()
+  geom_smooth() 
 
 ```
 ## Leaf Angle vs Elevation
@@ -294,7 +296,7 @@ plot(lulc)
 
 Add any additional processing steps here.
 
-# Results
+# Results 
 
 [~200 words]
 
@@ -316,7 +318,7 @@ Show tables, plots, etc. and describe them.
   # geom_point()
 ```
 
-# Conclusions
+# Conclusions 
 
 [~200 words]
 
